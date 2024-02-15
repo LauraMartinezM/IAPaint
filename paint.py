@@ -234,7 +234,7 @@ class Pintura:
     def usarModelo(self):
         class_names = []
         # Nombre del archivo que contiene las palabras
-        nombre_archivo = "Practica/mini_classes.txt"
+        nombre_archivo = "resources/mini_classes.txt"
 
         # Lee el contenido del archivo y crea una lista de palabras
         with open(nombre_archivo, 'r') as archivo:
@@ -260,7 +260,7 @@ class Pintura:
         img = img_origin.convert('L')
 
         image_size = 28
-        model = tf.keras.models.load_model('Practica/modelo.keras')
+        model = tf.keras.models.load_model('resources/modelo.keras')
         
         # Redimensionar la imagen y convertirla en un array
         img_resized = img.resize((image_size, image_size))

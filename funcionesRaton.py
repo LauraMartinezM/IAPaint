@@ -58,20 +58,20 @@ def detectarRostroVideo(frame):
 
             # Si ambos ojos estan cerrados se hace un clic y se reporduce un sonido de clic
             if (otroOjo[0].y - otroOjo[1].y) < 0.02 and (otroOjo_2[0].y - otroOjo_2[1].y) < 0.02:
-                pygame.mixer.music.load("clic.mp3")
+                pygame.mixer.music.load("resources/clic.mp3")
                 pygame.mixer.music.play()
                 pyautogui.click()
                 time.sleep(1)
             elif (otroOjo[0].y - otroOjo[1].y) < 0.02 and not pyautogui.mouseDown(): # si solo cierra el ojo derecho (cerrar y abrir) se mantienen pulsado el boton del clic y se reporduce un sonido de clic
                 print("cerrado")
                 pyautogui.mouseDown()
-                pygame.mixer.music.load("clic.mp3")
+                pygame.mixer.music.load("resources/clic.mp3")
                 pygame.mixer.music.play()
                 time.sleep(1)
             elif (otroOjo_2[0].y - otroOjo_2[1].y) < 0.02: # si solo cierra el ojo izquierdo (cerrar y abrir) se levanta el boton del clic y se reporduce un sonido de clic
                 print("cerrado ojo dos")
                 pyautogui.mouseUp()
-                pygame.mixer.music.load("clic.mp3")
+                pygame.mixer.music.load("resources/clic.mp3")
                 pygame.mixer.music.play()
                 time.sleep(1)
 
