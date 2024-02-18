@@ -9,9 +9,10 @@ import pyautogui
 from PIL import Image, ImageGrab, ImageTk
 
 from funcionesRaton import detectarRostroVideo
+from recogerDatos import guardarRespuestas
 
 import tensorflow as tf
-from tensorflow.keras.preprocessing import image
+from keras.preprocessing import image
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -153,7 +154,7 @@ class Pintura:
             Button(keyboard_window, text=button, width=5, height=2,
                     command=lambda b=button: on_key_press(b)).grid(row=row, column=col)
             col += 1
-            if col > 9:
+            if col > 9: # Comprobar si ha cambiado de fila
                 col = 0
                 row += 1
 
@@ -181,26 +182,26 @@ class Pintura:
         self.title_cambiar_color=Label(self.controls, text='pincel color',font='Gerorgia 14')
         self.title_cambiar_color.grid(row=3,column=0, columnspan=3)
 
-        self.btn_cambiar_color_rojo=Button(self.controls, width=20, bg="#EF3737",command= lambda: self.change_fg(0))
+        self.btn_cambiar_color_rojo=Button(self.controls, width=20,height=3, bg="#EF3737",command= lambda: self.change_fg(0))
         self.btn_cambiar_color_rojo.grid(row=4,column=0,padx=20, pady=10)
 
-        self.btn_cambiar_color_azul=Button(self.controls, width=20, bg="#376AEF",command= lambda: self.change_fg(1))
+        self.btn_cambiar_color_azul=Button(self.controls, width=20,height=3, bg="#376AEF",command= lambda: self.change_fg(1))
         self.btn_cambiar_color_azul.grid(row=4,column=1,padx=20, pady=10)
 
-        self.btn_cambiar_color_negro=Button(self.controls, width=20, bg="#000000",fg="#fff",command= lambda: self.change_fg(2))
+        self.btn_cambiar_color_negro=Button(self.controls, width=20,height=3, bg="#000000",fg="#fff",command= lambda: self.change_fg(2))
         self.btn_cambiar_color_negro.grid(row=4,column=2,padx=20, pady=10)
 
         #Guardar adivinar
         self.title_guardar_adivianr=Label(self.controls, text='Guardar/Adivinar', font='Gerorgia 14')
         self.title_guardar_adivianr.grid(row=5,column=0, columnspan=3)
 
-        self.btn_guardar=Button(self.controls, width=20 ,text="Guardar Imagen",command=self.open_keyboard)
+        self.btn_guardar=Button(self.controls, width=20,height=3 ,text="Guardar Imagen",command=self.open_keyboard)
         self.btn_guardar.grid(row=6,column=0,padx=20, pady=10)
 
-        self.btn_borrar=Button(self.controls, width=20 ,text="Borrar lienzo",command=self.clearcanvas)
+        self.btn_borrar=Button(self.controls, width=20,height=3 ,text="Borrar lienzo",command=self.clearcanvas)
         self.btn_borrar.grid(row=6,column=1,padx=20, pady=10)
 
-        self.btn_adivinar=Button(self.controls, width=20 ,text="Adivinar Imagen", command=self.usarModelo)
+        self.btn_adivinar=Button(self.controls, width=20,height=3 ,text="Adivinar Imagen", command=self.usarModelo)
         self.btn_adivinar.grid(row=6,column=2,padx=20, pady=10)
 
         self.controls.grid(row=0,column=1, padx=20)
@@ -208,8 +209,8 @@ class Pintura:
         self.c = Canvas(self.master, width=1200, height=1000, bg=self.color_bg)
         self.c.grid(row=0, column=0, sticky="ew", rowspan=2)
 
-        self.btn_salir = Button(self.master, text="Salir", width=20, command=self.master.destroy)
-        self.btn_salir.grid(row=2,column=1,padx=20, pady=10)
+        self.btn_salir = Button(self.master, text="Salir", width=20,height=3 ,command=self.master.destroy)
+        self.btn_salir.grid(row=2,column=1,padx=20, pady=5)
 
         menu = Menu(self.master)
         self.master.config(menu=menu)
@@ -219,7 +220,6 @@ class Pintura:
         optionmenu.add_command(label='fondo color', command=self.change_bg)
         optionmenu.add_command(label='Guardar Image', command=self.save_image)
         optionmenu.add_command(label='Borrar lienzo', command=self.clearcanvas)
-
 
     def update_camera(self):
         _, self.frame = self.cap.read()
@@ -231,20 +231,29 @@ class Pintura:
         self.camera_label.image = self.photo
         self.camera_label.after(10, self.update_camera)
 
+
     def usarModelo(self):
+        def acertado(interfaz):
+            datos= {"ejecucion": [{"num_intentos": 1}, {"resultado": latex[0]}]}
+
+            guardarRespuestas(datos,interfaz)
+        def fallado(interfaz):
+            resultado = Toplevel(self.controls)
+            resultado.title("Solución")
+            preciccion  = Label(resultado, text="Es alguna de las siguientes opciones")
+            preciccion.grid(row=0,column=0,columnspan=4)
+            aux_colum=0
+            for i in range(len(latex)):
+                if i > 0:
+                    Button(resultado, text=latex[i], command=lambda i=i:guardarRespuestas({"ejecucion": [{"num_intentos": 2}, {"resultado": latex[i]},{"predicho":latex[0]}]},interfaz),width=20, height=5).grid(row=1, column=aux_colum,padx=10, pady=10) #
+                    aux_colum = aux_colum +1
         class_names = []
         # Nombre del archivo que contiene las palabras
-        nombre_archivo = "resources/mini_classes.txt"
+        nombre_archivo = "./resources/mini_classes.txt"
 
         # Lee el contenido del archivo y crea una lista de palabras
         with open(nombre_archivo, 'r') as archivo:
             class_names = [line.strip() for line in archivo]
-        """ # Leer las clases que vamos a importar
-        f = open("Practica/mini_classes.txt","r")
-        classes = f.readlines()
-        f.close()
-
-        classes = [c.replace('\n','').replace(' ','_') for c in classes]"""
 
         # Obtener las dimensiones del canvas
         x0 = self.c.winfo_rootx()
@@ -254,7 +263,6 @@ class Pintura:
         
         # Capturar el contenido del canvas como una imagen
         img_origin = ImageGrab.grab(bbox=(x0, y0, x1, y1))
-
 
         # Convertir la imagen a escala de grises
         img = img_origin.convert('L')
@@ -279,8 +287,13 @@ class Pintura:
         resultado = Toplevel(self.controls)
         resultado.title("Resultado")
         preciccion  = Label(resultado, text=latex[0])
-        preciccion.pack()
+        preciccion.grid(row=0, column=0, columnspan=2)
+        opc1 = Button(resultado, text="si", command=lambda:acertado(self.controls),width=20, height=5)
+        opc1.grid(row=1, column=0,padx=10, pady=10)
+        opc2 = Button(resultado, text="no", command=lambda:fallado(self.controls),width=20, height=5)
+        opc2.grid(row=1, column=1,padx=10, pady=10)
 
+    
 
  
 
